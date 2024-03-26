@@ -1,6 +1,7 @@
 require("dotenv").config();
 const AWS = require("aws-sdk");
 const fs = require("fs");
+const fse = require("fs-extra");
 const Promise = require("bluebird");
 const SourceS3 = new AWS.S3({
   endpoint: process.env.SOURCE_ENDPOINT,
@@ -50,7 +51,11 @@ async function doTask() {
           Key: item,
         }).promise();
 
-        await fs.promises.writeFile(`imgs/${item}`, sourceFile.Body);
+        await Promise.promisify(fse.outputFile)(
+          `imgs/tmp/${item}`,
+          sourceFile.Body
+        );
+        // await fs.promises.writeFile(`imgs/${item}`, sourceFile.Body);
       },
       { concurrency: TRANSFER_THREADS }
     );

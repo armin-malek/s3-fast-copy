@@ -2,21 +2,10 @@ require("dotenv").config();
 const AWS = require("aws-sdk");
 const fs = require("fs");
 const Promise = require("bluebird");
-const SourceS3 = new AWS.S3({
-  endpoint: process.env.SOURCE_ENDPOINT,
-  accessKeyId: process.env.SOURCE_KEY,
-  secretAccessKey: process.env.SOURCE_SECRET,
-  // BUCKET: process.env.SOURCE_BUCKET,
-});
-const SOURCE_BUCKET = process.env.SOURCE_BUCKET;
-
-const TargetS3 = new AWS.S3({
-  endpoint: process.env.TARGET_ENDPOINT,
-  accessKeyId: process.env.TARGET_KEY,
-  secretAccessKey: process.env.TARGET_SECRET,
-  // BUCKET: process.env.TARGET_BUCKET,
-});
-const TARGET_BUCKET = process.env.TARGET_BUCKET;
+const { SourceS3, SOURCE_BUCKET, TargetS3, TARGET_BUCKET } = require("./s3");
+const { targetMinio } = require("./minio");
+const util = require("util");
+const PutObject = util.promisify(targetMinio.putObject);
 
 const TRANSFER_THREADS = parseInt(process.env.TRANSFER_THREADS);
 if (!TRANSFER_THREADS) {
@@ -37,11 +26,12 @@ console.log("LastIdx,", lastIdx);
 
 async function doTask() {
   try {
+    const startTime = Date.now();
     const ListToTransfer = sourceList.slice(
       lastIdx,
       lastIdx + TRANSFER_THREADS * 5
     );
-    console.log("ListToTransfer", ListToTransfer);
+    console.log("ListToTransfer", ListToTransfer.length);
 
     await Promise.map(
       ListToTransfer,
@@ -51,19 +41,21 @@ async function doTask() {
           Bucket: SOURCE_BUCKET,
           Key: item,
         }).promise();
-
         // await TargetS3.putObject({
         //   Bucket: TARGET_BUCKET,
         //   Key: item,
         //   Body: sourceFile.Body,
+
         // }).promise();
-        await fs.promises.writeFile(`imgs/${item}`, sourceFile.Body);
+        // await PutObject(TARGET_BUCKET, item, sourceFile.Body);
+        await targetMinio.putObject(TARGET_BUCKET, item, sourceFile.Body);
+        // await fs.promises.writeFile(`imgs/${item}`, sourceFile.Body);
       },
       { concurrency: TRANSFER_THREADS }
     );
     lastIdx += ListToTransfer.length;
     fs.writeFileSync("./lastIdx.txt", lastIdx.toString());
-    console.log(`Last ${lastIdx}`);
+    console.log(`Last ${lastIdx}, took: ${Date.now() - startTime}ms`);
     doTask();
   } catch (err) {
     console.log(err);

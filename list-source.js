@@ -1,19 +1,7 @@
 require("dotenv").config();
 const AWS = require("aws-sdk");
 const fs = require("fs");
-const SourceS3 = new AWS.S3({
-  endpoint: process.env.SOURCE_ENDPOINT,
-  accessKeyId: process.env.SOURCE_KEY,
-  secretAccessKey: process.env.SOURCE_SECRET,
-  // BUCKET: process.env.SOURCE_BUCKET,
-});
-
-const TargetS3 = new AWS.S3({
-  endpoint: process.env.TARGET_ENDPOINT,
-  accessKeyId: process.env.TARGET_KEY,
-  secretAccessKey: process.env.TARGET_SECRET,
-  // BUCKET: process.env.TARGET_BUCKET,
-});
+const { SourceS3, SOURCE_BUCKET } = require("./s3");
 
 // const ObjectsOnSource = [];
 // const ObjectsOnDest = [];
@@ -23,7 +11,7 @@ let count = 0;
 async function getSourceObjects() {
   try {
     const data = await SourceS3.listObjectsV2({
-      Bucket: process.env.SOURCE_BUCKET,
+      Bucket: SOURCE_BUCKET,
       // MaxKeys: 10,
       StartAfter: lastSourceKey || undefined,
     }).promise();
