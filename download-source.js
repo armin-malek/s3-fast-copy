@@ -18,7 +18,7 @@ if (!TRANSFER_THREADS) {
 }
 
 if (!fs.existsSync("./imgs")) {
-  console.log("no filder");
+  console.log("no folder");
   fs.mkdirSync("./imgs");
 }
 
@@ -52,7 +52,7 @@ async function doTask() {
         }).promise();
 
         await Promise.promisify(fse.outputFile)(
-          `imgs/tmp/${item}`,
+          `imgs/${item}`,
           sourceFile.Body
         );
         // await fs.promises.writeFile(`imgs/${item}`, sourceFile.Body);
