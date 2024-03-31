@@ -7,17 +7,17 @@ const SourceS3 = new AWS.S3({
 });
 const SOURCE_BUCKET = process.env.SOURCE_BUCKET;
 
-// const TargetS3 = new AWS.S3({
-//   endpoint: process.env.TARGET_ENDPOINT,
-//   accessKeyId: process.env.TARGET_KEY,
-//   secretAccessKey: process.env.TARGET_SECRET,
-//   // BUCKET: process.env.TARGET_BUCKET,
-// });
+const TargetS3 = new AWS.S3({
+  endpoint: process.env.TARGET_ENDPOINT,
+  accessKeyId: process.env.TARGET_KEY,
+  secretAccessKey: process.env.TARGET_SECRET,
+  // BUCKET: process.env.TARGET_BUCKET,
+});
 const TARGET_BUCKET = process.env.TARGET_BUCKET;
 
 module.exports = {
   SourceS3,
   SOURCE_BUCKET,
-  //   TargetS3,
+  TargetS3,
   TARGET_BUCKET,
 };
